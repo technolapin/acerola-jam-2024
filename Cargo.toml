@@ -1,6 +1,16 @@
 [package]
-name = "acerola-jam"
+name = "howto"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
 
 [dependencies]
+rand="*"
+glow = "*"
+glutin = { version = "0.31.2"}
+glutin-winit = { version = "0.4.2"}
+winit = { version = "0.29.10", features = ["rwh_05"]}
+raw-window-handle = { version = "0.5"}
+
+
+
+bytemuck = {version = "*", features = ["derive"]}
