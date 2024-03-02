@@ -1,0 +1,60 @@
+* Concept
+
+The theme of the jam being "aberration", it sounds like a good idea to take something natural and to make it behave unnaturaly.
+I will make a game where you make a plant grow unnaturaly. The plant will dig the ground to extract nutrients and water and grow leaves to produce energy that will be used to grow more, that's the "plant" part. The abberant behavior will be that the plant will also incorporate non-plant-ish nutrients such as ores and so, and will incorporate them to produce some unnatural traits.
+For instance, the plant might be able to eat iron ore to become sturdier, allowing to grow higher and to dig in solid rock. We could also think about absorbing uranium to gain energy.
+
+This is a 2D game.
+The world will be a voronoi (or power?) diagram made of simplicial complex. The centroids of the diagram will contain the various properties of the tile, such as its content (nutrients, water, porosity, mass, etc), the edges will contains the exchanges informations between the tiles, and the corners will be used to add or remove centroids (if we ever do that, that's possible but still a pain in the ass).
+
+Very importantly, the map topology never gets altered. It would be nice to allow otherwise, but I'll never get the time to do that.
+
+* Game aspect
+** Goal
+Reach a certain height (and eat the fucking sun)                                                                                                                
+** Gameplay loop
+ Manage roots and branches growth, choose upgrades.
+ Switch from growth mode to overview mode to allocate ressources and perform actions.
+ Non-exaustive list of potentials actions:
+ + tell a root to propagate allonng an edge
+ + tell some bourgeon to spawn a branch
+ + tell some leaves to fcking grow
+ + purchase some global upgrades
+ + make other things grow (tubercules, rhisoms, rejects maybe etc etc)
+ + heal a damaged zone
+
+All of this cost ressources.
+
+Ressources:
++ radiation exposure: the light received by the sun or other means. Not stored, that's a flux.
+  + sun exposure
+  + heat exposure (with the correct upgrade)
+  + radioactive material exposure (with the correct upgrade)
++ water: the thing you drown in. Stored in the cells of the plant.
++ sugar: made from radiation and water. Stored in the cells of the plant. Base ressource of the game.
++ silicate: used to solidify the plant. Slowly absorbed in soil. Can be used at some point to power up the leaves.
++ iron: used to solidify even more the plant. Slowly absorbed in soil (or maybe not).
++ uranium: veeery slowly gathered from the rock. Can be used as a radiation income to make more sugar.
++ cut a branch out (to save sugar). It will go back to the soil to make it richer (if I get enough time)
++ capacity: every cell of the tree can contain a maximum of each ressources. For instance tubercules will be able to store a whole lot of sugar, and special structure will be possible to store silicate, iron and more.
+
+Every cell of the plant consumes sugar to stay alive.
+If no sugar is left, then the plant dies and that's game over.
+
+
+
+Stages:
++ baby plant
+  + you rely on the seed's sugar
+  + the goal is to grow some roots and leaves to stay alive
+    
++ normal plant
+  + the goal is to get access to silicate technology
+  + you grow the plant more to gain a more important income of suggar as well as more storage capacity
+  + 
+  you can explore soil with your roots
+
+** Threats
+| threats       | swarms of locust maybe (boids?) eating things + other kinds of insects + mildioux. Humans maybe but I don't want to animate anything in 2D or 3D so I guess not |
+|               |                                                                                                                                                                 |
+

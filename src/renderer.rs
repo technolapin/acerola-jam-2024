@@ -67,7 +67,14 @@ macro_rules! create_vertex
 }
 
 create_vertex!(Vertice, pos, f32, 2, label, i32, 1);
-
+pub struct GLObject
+{
+    vao: glow::NativeVertexArray,
+//    vbo: glow::NativeVertexArray,
+//    ibo: glow::NativeVertexArray,
+    offset: i32,
+    nb_indices: i32
+}
 
 
 impl Renderer
@@ -116,12 +123,13 @@ impl Renderer
             .unwrap();
 
         let gl_context = not_current_gl_context.make_current(&gl_surface).unwrap();
-
         let gl = glow::Context::from_loader_function_cstr(|s| gl_display.get_proc_address(s));
 
         gl_surface
             .set_swap_interval(&gl_context, SwapInterval::Wait(NonZeroU32::new(1).unwrap()))
             .unwrap();
+	gl_surface.set_swap_interval(&gl_context, glutin::surface::SwapInterval::DontWait);
+
 
 	(Self
 	 {
@@ -137,9 +145,7 @@ impl Renderer
     pub unsafe fn create_mesh<Vertice: ThatAVertice + Pod>
 	(&self,
 	 vertices: &[Vertice],
-	 indices: &[u32]) -> (glow::NativeBuffer,
-			      glow::NativeVertexArray,
-			      glow::NativeBuffer)
+	 indices: &[u32]) -> GLObject
     {
 	let triangle_vertices_u8 = bytemuck::cast_slice(vertices);
 	let triangle_indices_u8 = bytemuck::cast_slice(indices);
@@ -158,13 +164,18 @@ impl Renderer
 
 	Vertice::setup_vao(&self.gl);
 
-	(vbo, vao, ibo)
+	GLObject
+	{
+	    vao,
+	    offset: 0,
+	    nb_indices: indices.len() as i32
+	}
     }
 
-    pub unsafe fn draw_mesh(&self, vao: glow::NativeVertexArray)
+    pub unsafe fn draw_mesh(&self, obj: &GLObject)
     {
-	self.gl.bind_vertex_array(Some(vao));
-	self.gl.draw_elements(glow::TRIANGLES, 6, glow::UNSIGNED_INT, 0);
+	self.gl.bind_vertex_array(Some(obj.vao));
+	self.gl.draw_elements(glow::TRIANGLES, obj.nb_indices, glow::UNSIGNED_INT, obj.offset);
 	self.gl.bind_vertex_array(None);
 
     }

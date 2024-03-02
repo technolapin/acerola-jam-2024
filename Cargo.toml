@@ -14,3 +14,6 @@ raw-window-handle = { version = "0.5"}
 
 
 bytemuck = {version = "*", features = ["derive"]}
+glam = "*"
+
+delaunator = "*"
