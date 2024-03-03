@@ -14,6 +14,8 @@ raw-window-handle = { version = "0.5"}
 
 
 bytemuck = {version = "*", features = ["derive"]}
-glam = "*"
+glam = "0.13.1"
 
 delaunator = "*"
+bluenoise="*"
+rand_pcg="*"

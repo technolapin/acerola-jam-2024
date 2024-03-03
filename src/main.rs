@@ -41,12 +41,23 @@ unsafe fn set_uniform(gl: &glow::Context, program: NativeProgram, name: &str, va
 }
 
 
+use bluenoise::WrappingBlueNoise;
+use rand::SeedableRng;
+use rand_pcg::Pcg64Mcg;
 
 fn main()
 {
     let mut graph = Graph::new();
-    let centroids = (0..100000)
-	.for_each(|i|
+
+    let mut noise = WrappingBlueNoise::from_rng(2.0, 2.0, 0.1, Pcg64Mcg::seed_from_u64(10));
+    let noise = noise.with_samples(10);
+    
+    for point in noise.take(10) {
+	println!("{}, {}", point.x, point.y);
+    }
+
+    let centroids = noise.take(10000)
+	.for_each(|pos|
 		  {
 		      let cell = match rand::random::<u32>() % 3
 		      {
@@ -55,10 +66,7 @@ fn main()
 		      	  _ => Cell::Stone
 		      };
 		      
-		      let radius = 1.0;
-		      let x = (rand::random::<f32>()*2.0 - 1.0)*radius;
-		      let y = (rand::random::<f32>()*2.0 - 1.0)*radius;
-		      graph.add_cell(cell, glam::Vec2{x,y});
+		      graph.add_cell(cell, pos - glam::Vec2::new(1.0,1.0));
 		  }
 	);
     graph.recompute_all();
@@ -188,7 +196,7 @@ vec3(8*16+5,9*16+9,0)/255.0);
                 vec2 frag_pos = gl_FragCoord.xy/uScreenSize;
                 float attenuation = exp(-d*d*6.0);
                 color = vec4(palette[flabel]*attenuation, 1.0);
-//                if (d < 0.003) color = vec4(1,1,1,1);
+                if (d < 0.003) color = vec4(1,1,1,1);
 
 
             }"#,
