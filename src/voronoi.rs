@@ -143,6 +143,7 @@ impl Voronoi
 			  let indice = self.corners_pos.len();
 			  let circ = circumcenter(&self.nodes_pos[i], &self.nodes_pos[j], &self.nodes_pos[k]);
 			  let rad = circ.length_squared();
+			  // the triangulation produces some very grave triangles at the hull. They should maybe be eventualy filtered out
 			  // if rad > max_radius {max_radius = rad;}
 			  // let dist = self.nodes_pos[i].distance(circ).max(self.nodes_pos[j].distance(circ)).max(self.nodes_pos[k].distance(circ));
 			  // if dist < 0.1
