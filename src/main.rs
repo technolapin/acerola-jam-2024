@@ -75,11 +75,11 @@ fn main()
     let mut graph = Voronoi::new();
     let mut rng =  Pcg64Mcg::seed_from_u64(10);
 
-    let mut noise = WrappingBlueNoise::from_rng(2.0, 2.0, 0.01, Pcg64Mcg::seed_from_u64(100));
+    let mut noise = WrappingBlueNoise::from_rng(1.0, 1.0, 0.01, Pcg64Mcg::seed_from_u64(100));
     let noise = noise.with_samples(10);
     
-
-    let centroids = noise.take(10000)
+    let mut max_radius = 0.0;
+    let centroids = noise.take(1000)
 	.for_each(|pos|
 		  {
 		      let cell = match rand::random::<u32>() % 3
@@ -88,10 +88,13 @@ fn main()
 		      	  1 => Cell::Dirt,
 		      	  _ => Cell::Stone
 		      };
-		      
-		      graph.add_cell(cell, pos - glam::Vec2::new(1.0,1.0));
+		      let p = pos*2.0 - glam::Vec2::new(1.0,1.0);
+		      graph.add_cell(cell, p);
+		      let rad = p.length_squared();
+		      if rad > max_radius {max_radius = rad};
 		  }
 	);
+    println!("Max radius: {}", max_radius);
     graph.recompute_all();
     let mut vertices: Vec<Vertice> = vec![];
     let mut indices: Vec<u32> = vec![];
@@ -169,6 +172,7 @@ fn main()
         rdr.gl.clear_color(0.1, 0.2, 0.3, 1.0);
 
 	let loc_screenres = rdr.gl.get_uniform_location(program, "uScreenSize");
+	let loc_projmatrix = rdr.gl.get_uniform_location(program, "uProjMatrix");
 	
         // We handle events differently between targets
 	println!("MArcooooo");
@@ -228,7 +232,24 @@ fn main()
 				let new_clock2 = std::time::Instant::now();
 				let w = rdr.gl_surface.width().unwrap();
 				let h = rdr.gl_surface.height().unwrap();
+				rdr.gl.viewport(0,0,w as i32,h as i32);
+				// let proj_matrix = glam::Mat4::perspective_lh(
+				//     1.0,
+				//     w as f32/h as f32,
+				//     0.,
+				//     100.0
+				// );
+				let max_coord = w.max(h) as f32;
+				let rx = w as f32 / max_coord/2.0;
+				let ry = h as f32 / max_coord/2.0;
+				let matrix_proj = glam::Mat4::from_diagonal(glam::Vec4::new(1./rx, 1./ry, 1.0, 1.0));
+				let matrix_proj = glam::Mat4::perspective_infinite_lh(1.2, w as f32 / h as f32, 0.0);
+				let camera_pos = glam::Vec3::new(0.,0., -(t/10.).cos());
+				let matrix_view = glam::Mat4::from_translation(glam::Vec3::new(camera_pos.x, camera_pos.y, camera_pos.z));
+				let matrix_VP = matrix_proj * matrix_view;
 				rdr.gl.uniform_2_f32(loc_screenres.as_ref(), w as f32, h as f32);
+				
+				rdr.gl.uniform_matrix_4_f32_slice(loc_projmatrix.as_ref(), false, &matrix_VP.to_cols_array());
 				rdr.gl.clear(glow::COLOR_BUFFER_BIT);
 				rdr.gl.clear_color(t.cos()*(2.*t).cos(), t.sin()*(2.*t).cos(),(2.*t).sin(), 1.);
 				rdr.draw_mesh(&gl_obj);
@@ -241,8 +262,8 @@ fn main()
 				let elapsed = new_clock.duration_since(clock);
 				clock = new_clock;
 				let delta = elapsed.as_secs_f32();
-				println!("Tick time: {} secs ({} FPS)  | frame drawing: {} secs or {} with swap",
-				 	 delta, 1.0/delta, draw_time, swap_time);
+			//	println!("Tick time: {} secs ({} FPS)  | frame drawing: {} secs or {} with swap",
+			//	 	 delta, 1.0/delta, draw_time, swap_time);
 				// println!("vertices: {} bytes", std::mem::size_of::<Vertice>()*vertices.len());
 				
 

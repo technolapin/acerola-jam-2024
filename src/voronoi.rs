@@ -120,7 +120,8 @@ impl Voronoi
 	{
 	    self.nodes_corner.push(vec![]);
 	}
-	
+
+	let mut max_radius = 0.0;
 	let points: Vec<delaunator::Point> = self.nodes_pos.iter().map(|pos| delaunator::Point{x: pos.x as f64, y:pos.y as f64}).collect();
 	let now = std::time::Instant::now();
 	let result = delaunator::triangulate(&points);
@@ -140,11 +141,19 @@ impl Voronoi
 			  edges.insert((i,k));
 			  edges.insert((j,k));
 			  let indice = self.corners_pos.len();
-			  self.corners_pos.push(circumcenter(&self.nodes_pos[i], &self.nodes_pos[j], &self.nodes_pos[k]));
-			  self.nodes_corner[i].push(indice);
-			  self.nodes_corner[j].push(indice);
-			  self.nodes_corner[k].push(indice);
+			  let circ = circumcenter(&self.nodes_pos[i], &self.nodes_pos[j], &self.nodes_pos[k]);
+			  let rad = circ.length_squared();
+			  // if rad > max_radius {max_radius = rad;}
+			  // let dist = self.nodes_pos[i].distance(circ).max(self.nodes_pos[j].distance(circ)).max(self.nodes_pos[k].distance(circ));
+			  // if dist < 0.1
+			  // {
+			      self.corners_pos.push(circ);
+			      self.nodes_corner[i].push(indice);
+			      self.nodes_corner[j].push(indice);
+			      self.nodes_corner[k].push(indice);
+//			  }
 		      });
+	println!("Max radius of circumcenter: {}", max_radius);
 	// now this is getting technical: we sort the indices of the corners relative to any node, using their angle of rotation aroud the centroid
 	let angle_arround = |pos:&glam::Vec2, pos0: &glam::Vec2| {(*pos-*pos0).angle_between(glam::Vec2::new(1.0,0.0))};
 	for i in 0..self.nodes_corner.len()
