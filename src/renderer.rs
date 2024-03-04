@@ -39,7 +39,7 @@ macro_rules! create_vertex
 {
     ($name:ident, $($param:ident, $param_type: ty, $param_size: expr),+) =>
     {
-	#[derive(Clone, Copy, Pod, Zeroable)]
+	#[derive(Debug, Clone, Copy, Pod, Zeroable)]
 	#[repr(C)]
 	pub struct $name
 	{
@@ -79,7 +79,7 @@ pub struct GLObject
 
 impl Renderer
 {
-    pub unsafe fn new(title: &str, base_res: (f32, f32)) -> (Self, winit::event_loop::EventLoop<()>)
+    pub unsafe fn new(title: &str, base_res: (f32, f32), uncap_fps: bool) -> (Self, winit::event_loop::EventLoop<()>)
     {
 	let event_loop = winit::event_loop::EventLoopBuilder::new().build().unwrap();
         let window_builder = winit::window::WindowBuilder::new()
@@ -128,7 +128,7 @@ impl Renderer
         gl_surface
             .set_swap_interval(&gl_context, SwapInterval::Wait(NonZeroU32::new(1).unwrap()))
             .unwrap();
-	gl_surface.set_swap_interval(&gl_context, glutin::surface::SwapInterval::DontWait);
+	if (uncap_fps) {gl_surface.set_swap_interval(&gl_context, glutin::surface::SwapInterval::DontWait);}
 
 
 	(Self
