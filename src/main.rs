@@ -7,20 +7,17 @@ use renderer::{Renderer, Vertice};
 use glow::*;
 
 use winit::{
-    event::{ElementState, Event, KeyEvent, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
-    keyboard::{Key, NamedKey},
-    window::Window,
+    event::{ElementState,  KeyEvent},
+    event_loop::{ControlFlow},
+    keyboard::{Key, NamedKey}
 };
 
-use std::thread;
 
 #[cfg(not(web_platform))]
 use std::time;
 #[cfg(web_platform)]
 use web_time as time;
 
-const POLL_SLEEP_TIME: time::Duration = time::Duration::from_millis(10);
 const WAIT_TIME: time::Duration = time::Duration::from_millis(10);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -46,7 +43,6 @@ use rand::{SeedableRng, Rng};
 use rand_pcg::Pcg64Mcg;
 
 
-use std::io::Read;
 
 // /**
 // Expect the path of a folder containing a file "vertex.glsl" and "fragment.glsl" as well as an optional "geometry.glsl" and returns their content.
@@ -70,7 +66,7 @@ use std::io::Read;
 //     }
 // }
 
-fn main()
+fn main() -> Result<(), howto::error::Error>
 {
     let mut graph = Voronoi::new();
     let mut rng =  Pcg64Mcg::seed_from_u64(10);
@@ -79,7 +75,7 @@ fn main()
     let noise = noise.with_samples(10);
     
     let mut max_radius = 0.0;
-    let centroids = noise.take(1000)
+    noise.take(100000)
 	.for_each(|pos|
 		  {
 		      let cell = match rand::random::<u32>() % 3
@@ -119,7 +115,7 @@ fn main()
  //   println!("INDICES : {:?}", &indices);
  //graph.nodes_pos.iter().map(|Node{cell, pos, ..}| Vertice{pos: [pos.x, pos.y], label: [(rng.gen::<u32>() % 16) as i32]}).collect();
     unsafe {
-	let (rdr, event_loop) = Renderer::new("oui oui baguette", (1600./2.0, 900./2.0), true);
+	let (rdr, event_loop) = Renderer::new("oui oui baguette", (1600./2.0, 900./2.0), false)?;
 
 	// let vertices = vec![
         //     Vertice{pos: [-0.5, -0.5], label: [0]},
@@ -228,7 +224,6 @@ fn main()
 				close_requested = true;
                             }
                             WindowEvent::RedrawRequested => {
-				t+= 0.004;
 				let new_clock2 = std::time::Instant::now();
 				let w = rdr.gl_surface.width().unwrap();
 				let h = rdr.gl_surface.height().unwrap();
@@ -244,12 +239,12 @@ fn main()
 				let ry = h as f32 / max_coord/2.0;
 				let matrix_proj = glam::Mat4::from_diagonal(glam::Vec4::new(1./rx, 1./ry, 1.0, 1.0));
 				let matrix_proj = glam::Mat4::perspective_infinite_lh(1.2, w as f32 / h as f32, 0.0);
-				let camera_pos = glam::Vec3::new(0.,0., -(t/10.).cos());
+				let camera_pos = glam::Vec3::new(0.,0., -(t).cos());
 				let matrix_view = glam::Mat4::from_translation(glam::Vec3::new(camera_pos.x, camera_pos.y, camera_pos.z));
-				let matrix_VP = matrix_proj * matrix_view;
+				let matrix_vp = matrix_proj * matrix_view;
 				rdr.gl.uniform_2_f32(loc_screenres.as_ref(), w as f32, h as f32);
 				
-				rdr.gl.uniform_matrix_4_f32_slice(loc_projmatrix.as_ref(), false, &matrix_VP.to_cols_array());
+				rdr.gl.uniform_matrix_4_f32_slice(loc_projmatrix.as_ref(), false, &matrix_vp.to_cols_array());
 				rdr.gl.clear(glow::COLOR_BUFFER_BIT);
 				rdr.gl.clear_color(t.cos()*(2.*t).cos(), t.sin()*(2.*t).cos(),(2.*t).sin(), 1.);
 				rdr.draw_mesh(&gl_obj);
@@ -261,9 +256,11 @@ fn main()
 				let new_clock = std::time::Instant::now();
 				let elapsed = new_clock.duration_since(clock);
 				clock = new_clock;
+				t+= elapsed.as_secs_f32();
+
 				let delta = elapsed.as_secs_f32();
-			//	println!("Tick time: {} secs ({} FPS)  | frame drawing: {} secs or {} with swap",
-			//	 	 delta, 1.0/delta, draw_time, swap_time);
+				println!("Tick time: {} secs ({} FPS)  | frame drawing: {} secs or {} with swap",
+				 	 delta, 1.0/delta, draw_time, swap_time);
 				// println!("vertices: {} bytes", std::mem::size_of::<Vertice>()*vertices.len());
 				
 
@@ -305,4 +302,5 @@ fn main()
 
 
     }
+    Ok(())
 }

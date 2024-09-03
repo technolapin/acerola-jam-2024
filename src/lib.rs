@@ -2,6 +2,8 @@ pub mod maths;
 //use rand::{SeedableRng, Rng};
 pub mod shaders { include!(concat!(env!("OUT_DIR"), "/shaders.rs"));}
 
+pub mod error;
+
 mod tests
 {
     #[test]

@@ -1,0 +1,7 @@
+pub mod maths;
+
+
+mod tests
+{
+    #[tests]
+}

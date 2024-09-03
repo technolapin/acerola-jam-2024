@@ -1,0 +1,17 @@
+/** uses my brain rotten by geometric algebra in order to compute the circumcenter of a triangle from its 3 points */
+fn circumcenter(glam::Vec2 pos1, glam::Vec2 pos2, glam::Vec2 pos3)
+{
+    // we work in projective algebra
+    let p1 = glam::Vec3(p1.x, p1.y, 1.0);
+    let p2 = glam::Vec3(p2.x, p2.y, 1.0);
+    let p3 = glam::Vec3(p3.x, p3.y, 1.0);
+    // dual of bivectors, as the cross product is the dual of the wedge product
+    let l12 = p1.cross(p2);
+    let l13 = p1.cross(p3);
+    // 1-vector for the same reasons
+    let circum = l12.cross(l13);
+
+    // the homogeneous coordinate is ought to be non-zero, unless we have realy bad karma
+    return circum.xy/circum.z;
+}
+

@@ -29,7 +29,7 @@ pub struct Renderer
 
 
 /** whatever implements this is a vertice */
-trait ThatAVertice
+pub trait ThatAVertice
 {
     unsafe fn setup_vao(gl: &glow::Context);
 }
@@ -49,16 +49,16 @@ macro_rules! create_vertex
 	{
 	    unsafe fn setup_vao(gl: &glow::Context)
 	    {
-		let LAYOUT: [usize;  0 $(+ 1 + $param_size*0)+] = [$($param_size* std::mem::size_of::<$param_type>(),)+];
-		let TOTAL_SIZE: usize =  std::mem::size_of::<Self>();
-		let mut i: usize = 0;
+		let layout: [usize;  0 $(+ 1 + $param_size*0)+] = [$($param_size* std::mem::size_of::<$param_type>(),)+];
+		let total_size: usize =  std::mem::size_of::<Self>();
+		let mut i: i32 = -1;
 		let mut offset = 0;
 		$(
+		    i+=1; // we start at -1 to avoid a warning
 		    gl.enable_vertex_attrib_array(i as u32);
 		    // there are other methods such as vertex_attrib_pointer_i32/f64, but they are unecessary in our case
-		    gl.vertex_attrib_pointer_f32(i as u32, $param_size, glow::FLOAT, false, TOTAL_SIZE as i32, offset);
-		    offset += LAYOUT[i as usize] as i32;
-		    i+=1;
+		    gl.vertex_attrib_pointer_f32(i as u32, $param_size, glow::FLOAT, false, total_size as i32, offset);
+		    offset += layout[i as usize] as i32;
 		)+
 	    	
 	    }
@@ -79,7 +79,7 @@ pub struct GLObject
 
 impl Renderer
 {
-    pub unsafe fn new(title: &str, base_res: (f32, f32), uncap_fps: bool) -> (Self, winit::event_loop::EventLoop<()>)
+    pub unsafe fn new(title: &str, base_res: (f32, f32), uncap_fps: bool) -> Result<(Self, winit::event_loop::EventLoop<()>), howto::error::Error>
     {
 	let event_loop = winit::event_loop::EventLoopBuilder::new().build().unwrap();
         let window_builder = winit::window::WindowBuilder::new()
@@ -128,17 +128,20 @@ impl Renderer
         gl_surface
             .set_swap_interval(&gl_context, SwapInterval::Wait(NonZeroU32::new(1).unwrap()))
             .unwrap();
-	if (uncap_fps) {gl_surface.set_swap_interval(&gl_context, glutin::surface::SwapInterval::DontWait);}
+	if uncap_fps
+	{
+	    gl_surface.set_swap_interval(&gl_context, glutin::surface::SwapInterval::DontWait)?;
+	}
 
 
-	(Self
+	Ok((Self
 	 {
 	     gl,
 	     gl_surface,
 	     gl_context,
 		window
 	 },
-	 event_loop)
+	 event_loop))
 
     }
     

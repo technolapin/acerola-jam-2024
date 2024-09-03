@@ -3,7 +3,7 @@ use std::fs;
 
  
 use std::{
-    env, error::Error, fs::File, io::{BufWriter, Write}, path::{Path, PathBuf},
+    env, error::Error, path::{Path, PathBuf},
 };
 
 
@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn Error>>
 {
 //    let out_dir = env::var("OUT_DIR")?;
     
-    let paths = fs::read_dir("./shaders").unwrap();
+//    let paths = fs::read_dir("./shaders").unwrap();
 
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("shaders.rs");
